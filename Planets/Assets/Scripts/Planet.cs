@@ -2,17 +2,23 @@ using UnityEngine;
 
 public class Planet : MonoBehaviour {
 	[Range(2, 256)]
-	[SerializeField] int resolution = 10;
+	public int resolution = 10;
+	public bool autoUpdate = true;
+
+	public ShapeSettings shapeSettings;
+	public ColorSettings colorSettings;
+
+	[HideInInspector] public bool shapeSettingsFoldout;
+	[HideInInspector] public bool colorSettingsFoldout;
+
+	ShapeGenerator shapeGenerator;
 
 	[SerializeField, HideInInspector] MeshFilter[] meshFilters;
 	TerrainFace[] terrainFaces;
 
-	void OnValidate() {
-		Initialize();
-		GenerateMesh();
-	}
-
 	void Initialize() {
+		shapeGenerator = new ShapeGenerator(shapeSettings);
+
 		if (meshFilters == null || meshFilters.Length == 0) meshFilters = new MeshFilter[6];
 		terrainFaces = new TerrainFace[6];
 
@@ -35,13 +41,39 @@ public class Planet : MonoBehaviour {
 				meshFilters[i].sharedMesh = new Mesh();
 			}
 
-			terrainFaces[i] = new TerrainFace(meshFilters[i].sharedMesh, resolution, directions[i]);
+			terrainFaces[i] = new TerrainFace(shapeGenerator, meshFilters[i].sharedMesh, resolution, directions[i]);
+		}
+	}
+
+	public void GeneratePlanet() {
+		Initialize();
+		GenerateMesh();
+		GenerateColors();
+	}
+
+	public void OnShapeSettingsUpdated() {
+		if (autoUpdate) {
+			Initialize();
+			GenerateMesh();
+		}
+	}
+
+	public void OnColorSettingsUpdated() {
+		if (autoUpdate) {
+			Initialize();
+			GenerateColors();
 		}
 	}
 
 	void GenerateMesh() {
 		for (int i=0; i<terrainFaces.Length; i++) {
 			terrainFaces[i].ConstructMesh();
+		}
+	}
+
+	void GenerateColors() {
+		for (int i=0; i<meshFilters.Length; i++) {
+			meshFilters[i].GetComponent<MeshRenderer>().sharedMaterial.color = colorSettings.planetColor;
 		}
 	}
 }
