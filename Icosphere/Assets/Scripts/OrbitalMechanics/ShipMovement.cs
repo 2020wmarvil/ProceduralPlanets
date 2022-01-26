@@ -19,6 +19,9 @@ public class ShipMovement : MonoBehaviour {
             if (r < maxEffectedRadius) {
                 double gForceMag = G * shipMass * o.mass * oneOverRSquared;
                 Vector3d gForce = direction * gForceMag;
+
+                // todo: custom verlet phsyics
+                GetComponent<Rigidbody>().AddForce(new Vector3((float)gForce.x, (float)gForce.y, (float)gForce.z));
             }
 		}
     }
